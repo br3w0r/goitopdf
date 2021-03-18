@@ -2,15 +2,32 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-	"log"
-	"path/filepath"
 	"github.com/phpdave11/gofpdf"
+	"log"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
+var (
+	imagetypes = []string{".jpg", ".png"}
+)
+
+func checkTypes(filename string) bool {
+
+	for _, k := range imagetypes {
+
+		if strings.HasSuffix(filename, k) {
+			return true
+		}
+
+	}
+	return false
+}
+
 type PdfGen struct {
-	inst *gofpdf.Fpdf
+	inst  *gofpdf.Fpdf
 	width float64
 }
 
@@ -21,14 +38,14 @@ func CreatePdf(width int, height int) (pdf *PdfGen) {
 	}
 	initType := gofpdf.InitType{
 		OrientationStr: "P",
-		UnitStr: "mm",
-		SizeStr: "",
-		Size: size,
-		FontDirStr: "",
+		UnitStr:        "mm",
+		SizeStr:        "",
+		Size:           size,
+		FontDirStr:     "",
 	}
 
 	pdf = &PdfGen{
-		inst: gofpdf.NewCustom(&initType),
+		inst:  gofpdf.NewCustom(&initType),
 		width: float64(width),
 	}
 	return
@@ -62,27 +79,26 @@ func main() {
 	}
 
 	pdf := CreatePdf(width, height)
-	first := true
-	err = filepath.Walk(os.Args[1], func (path string, info os.FileInfo, err error) error {
-		// Skipping first because it's the dir itself
-		if first {
-			first = false
-			return nil	
+	err = filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
+		
+		// Ignoring directories and files that are not images
+		if info.IsDir() || !checkTypes(info.Name()) {
+			return nil
 		}
 
 		if err != nil {
 			return err
 		}
 
-		fmt.Println("Adding new image: " + path);
-		
+		fmt.Println("Adding new image: " + path)
+
 		err = pdf.AddImage(path)
 		if err != nil {
 			return err
 		}
 
 		return nil
-	});
+	})
 
 	if err != nil {
 		log.Fatal(err)
