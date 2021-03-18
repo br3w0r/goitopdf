@@ -8,5 +8,5 @@ A simple CLI tool written in Go to convert images in a specified directory to pd
 - page_height - height of pdf pages
 - output - path and filename to save your created pdf to
 
-# Example
+## Example
 `goitopdf "/home/user/my_favorite_manga" 2000 3000 ./my_favourite_manga.pdf`
