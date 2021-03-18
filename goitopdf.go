@@ -47,7 +47,7 @@ func (pdf *PdfGen) Save(path string) error {
 
 func main() {
 	if os.Args[1] == "-h" {
-		fmt.Println("pdf-gen images_dir page_width page_height output_filename")
+		fmt.Println("goitopdf images_dir page_width page_height output_filename")
 		return
 	}
 
