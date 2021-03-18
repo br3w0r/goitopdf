@@ -80,14 +80,14 @@ func main() {
 
 	pdf := CreatePdf(width, height)
 	err = filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
-		
-		// Ignoring directories and files that are not images
-		if info.IsDir() || !checkTypes(info.Name()) {
-			return nil
-		}
 
 		if err != nil {
 			return err
+		}
+
+		// Ignoring directories and files that are not images
+		if info.IsDir() || !checkTypes(info.Name()) {
+			return nil
 		}
 
 		fmt.Println("Adding new image: " + path)
