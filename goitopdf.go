@@ -6,8 +6,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 var (
@@ -28,32 +30,34 @@ func checkTypes(filename string) bool {
 
 type PdfGen struct {
 	inst  *gofpdf.Fpdf
-	width float64
 }
 
-func CreatePdf(width int, height int) (pdf *PdfGen) {
-	size := gofpdf.SizeType{
-		Wd: float64(width),
-		Ht: float64(height),
-	}
-	initType := gofpdf.InitType{
-		OrientationStr: "P",
-		UnitStr:        "mm",
-		SizeStr:        "",
-		Size:           size,
-		FontDirStr:     "",
-	}
-
+func CreatePdf() (pdf *PdfGen) {
 	pdf = &PdfGen{
-		inst:  gofpdf.NewCustom(&initType),
-		width: float64(width),
+		inst:  gofpdf.New("P", "mm", "", ""),
 	}
 	return
 }
 
 func (pdf *PdfGen) AddImage(path string) error {
-	pdf.inst.AddPage()
-	pdf.inst.Image(path, 0, 0, pdf.width, 0, false, "", 0, "")
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	image, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return err
+	}
+
+	sizeType := gofpdf.SizeType{
+		Wd: float64(image.Width),
+		Ht: float64(image.Height),
+	}
+
+	pdf.inst.AddPageFormat("P", sizeType)
+	pdf.inst.Image(path, 0, 0, sizeType.Wd, sizeType.Ht, false, "", 0, "")
 
 	return nil
 }
@@ -64,22 +68,12 @@ func (pdf *PdfGen) Save(path string) error {
 
 func main() {
 	if os.Args[1] == "-h" {
-		fmt.Println("goitopdf images_dir page_width page_height output_filename")
+		fmt.Println("goitopdf images_dir output_filename")
 		return
 	}
 
-	width, err := strconv.Atoi(os.Args[2])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	height, err := strconv.Atoi(os.Args[3])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	pdf := CreatePdf(width, height)
-	err = filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
+	pdf := CreatePdf()
+	err := filepath.Walk(os.Args[1], func(path string, info os.FileInfo, err error) error {
 
 		if err != nil {
 			return err
@@ -105,7 +99,7 @@ func main() {
 	}
 
 	fmt.Println("Saving file...")
-	err = pdf.Save(os.Args[4])
+	err = pdf.Save(os.Args[2])
 
 	if err != nil {
 		log.Fatal(err)
