@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"image"
+	"errors"
 	_ "image/jpeg"
 	_ "image/png"
 )
@@ -59,6 +60,9 @@ func (pdf *PdfGen) AddImage(path string) error {
 	pdf.inst.AddPageFormat("P", sizeType)
 	pdf.inst.Image(path, 0, 0, sizeType.Wd, sizeType.Ht, false, "", 0, "")
 
+	if pdf.inst.Err() {
+		return errors.New("Error adding image")
+	}
 	return nil
 }
 
