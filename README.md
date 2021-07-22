@@ -49,4 +49,4 @@ You can also implement your images iteration algorithm by using `IToPDF`'s `AddI
 
 goitopdf is released under the MIT License and copyrighted by Daniil Dirun.
 
-gofpdf is released under the MIT License. It is copyrighted by Dave Barnes and the contributors acknowledged in [documentation to the library](https://github.com/phpdave11/gofpdf/blob/master/README.md).
+gofpdf is released under the MIT License. It is copyrighted by Dave Barnes and the contributors acknowledged in [the documentation to the library](https://github.com/phpdave11/gofpdf/blob/master/README.md).
