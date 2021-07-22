@@ -2,7 +2,6 @@ package itopdf
 
 import (
 	"errors"
-	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
@@ -16,7 +15,10 @@ import (
 type IToPDF interface {
 	AddImage(path string) error
 	Save(path string) error
-	WalkDir(dir string, out string) error
+
+	// WalkDir uses AddImage and Save methods to iterate over a directory and add all images in it to pdf.
+	// iterCallback - function that takes full path of an image that is being saved
+	WalkDir(dir string, iterCallback func(path string)) error
 }
 
 type iToPDF struct {
@@ -64,8 +66,7 @@ func (pdf *iToPDF) Save(path string) error {
 	return pdf.inst.OutputFileAndClose(path)
 }
 
-// WalkDir uses AddImage and Save methods to iterate over a directory and save all images in it
-func (pdf *iToPDF) WalkDir(dir string, out string) error {
+func (pdf *iToPDF) WalkDir(dir string, iterCallback func(path string)) error {
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -76,7 +77,9 @@ func (pdf *iToPDF) WalkDir(dir string, out string) error {
 			return nil
 		}
 
-		fmt.Println("Adding new image: " + path)
+		if iterCallback != nil {
+			iterCallback(path)
+		}
 
 		err = pdf.AddImage(path)
 		if err != nil {
@@ -86,13 +89,6 @@ func (pdf *iToPDF) WalkDir(dir string, out string) error {
 		return nil
 	})
 
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Saving file...")
-
-	err = pdf.Save(out)
 	if err != nil {
 		return err
 	}
