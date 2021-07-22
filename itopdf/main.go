@@ -19,7 +19,7 @@ type IToPDF interface {
 	WalkDir(dir string, out string) error
 }
 
-type PdfGen struct {
+type iToPDF struct {
 	inst *gofpdf.Fpdf
 }
 
@@ -28,13 +28,13 @@ var (
 )
 
 func NewInstance() (pdf IToPDF) {
-	pdf = &PdfGen{
+	pdf = &iToPDF{
 		inst: gofpdf.New("P", "mm", "", ""),
 	}
 	return
 }
 
-func (pdf *PdfGen) AddImage(path string) error {
+func (pdf *iToPDF) AddImage(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -60,12 +60,12 @@ func (pdf *PdfGen) AddImage(path string) error {
 	return nil
 }
 
-func (pdf *PdfGen) Save(path string) error {
+func (pdf *iToPDF) Save(path string) error {
 	return pdf.inst.OutputFileAndClose(path)
 }
 
 // WalkDir uses AddImage and Save methods to iterate over a directory and save all images in it
-func (pdf *PdfGen) WalkDir(dir string, out string) error {
+func (pdf *iToPDF) WalkDir(dir string, out string) error {
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
