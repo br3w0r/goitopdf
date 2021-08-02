@@ -26,7 +26,8 @@ type iToPDF struct {
 }
 
 var (
-	imagetypes = []string{".jpg", ".png"}
+	imagetypes              = []string{".jpg", ".png"}
+	ErrWrongImageType error = errors.New("wrong image type")
 )
 
 func NewInstance() (pdf IToPDF) {
@@ -37,6 +38,10 @@ func NewInstance() (pdf IToPDF) {
 }
 
 func (pdf *iToPDF) AddImage(path string) error {
+	if !checkTypes(path) {
+		return ErrWrongImageType
+	}
+
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -66,14 +71,14 @@ func (pdf *iToPDF) Save(path string) error {
 	return pdf.inst.OutputFileAndClose(path)
 }
 
-func (pdf *iToPDF) WalkDir(dir string, iterCallback func(path string)) error {
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+func (pdf *iToPDF) walkFunc(iterCallback func(path string)) func(path string, info os.FileInfo, err error) error {
+	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// Ignoring directories and files that are not images
-		if info.IsDir() || !checkTypes(info.Name()) {
+		// Ignoring directories
+		if info.IsDir() {
 			return nil
 		}
 
@@ -82,12 +87,22 @@ func (pdf *iToPDF) WalkDir(dir string, iterCallback func(path string)) error {
 		}
 
 		err = pdf.AddImage(path)
+
+		// Ignoring files of wrong extention
+		if err == ErrWrongImageType {
+			return nil
+		}
+
 		if err != nil {
 			return err
 		}
 
 		return nil
-	})
+	}
+}
+
+func (pdf *iToPDF) WalkDir(dir string, iterCallback func(path string)) error {
+	err := filepath.Walk(dir, pdf.walkFunc(iterCallback))
 
 	if err != nil {
 		return err
