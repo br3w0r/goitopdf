@@ -7,12 +7,12 @@ import (
 	"github.com/br3w0r/goitopdf/itopdf"
 )
 
-// prints help to stdout
+// displayHelp prints help to stdout
 func displayHelp() {
-
         fmt.Println("goitopdf images_dir output_filename")
 }
 
+// walkAndSave walks dir and saves out file
 func walkAndSave(dir string, out string) error {
 	pdf := itopdf.NewInstance()
 
