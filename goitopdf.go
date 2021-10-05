@@ -7,6 +7,12 @@ import (
 	"github.com/br3w0r/goitopdf/itopdf"
 )
 
+// prints help to stdout
+func displayHelp() {
+
+        fmt.Println("goitopdf images_dir output_filename")
+}
+
 func walkAndSave(dir string, out string) error {
 	pdf := itopdf.NewInstance()
 
@@ -28,8 +34,15 @@ func walkAndSave(dir string, out string) error {
 }
 
 func main() {
-	if os.Args[1] == "-h" {
-		fmt.Println("goitopdf images_dir output_filename")
+        // Display help if no argument is provided
+        if len(os.Args) < 2 {
+                displayHelp()
+                return
+        }
+
+        // support --help as well
+	if os.Args[1] == "-h" || os.Args[1] == "--help" {
+		displayHelp()
 		return
 	}
 
